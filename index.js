@@ -72,7 +72,6 @@ module.exports = ({
   if (!noInlineHighlight) {
     visit(markdownAST, `inlineCode`, (node, ancestors) => {
       const [ parent ] = ancestors.slice(-1);
-      if (parent.type === `heading`) return;
       
       let languageName = `text`;
 
@@ -88,8 +87,15 @@ module.exports = ({
       }
 
       const className = `${classPrefix}${languageName}`;
-      node.type = `html`;
-      node.value = `<code class="${className}">${highlightCode(languageName, node.value)}</code>`;
+
+      if (parent.type === `heading`) {
+        if (!node.data) node.data = {};
+        node.data.hProperties = { className: [className] }
+      }
+      else {
+        node.type = `html`;
+        node.value = `<code class="${className}">${highlightCode(languageName, node.value)}</code>`;
+      }
     });
   }
 };
